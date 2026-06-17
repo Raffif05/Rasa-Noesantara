@@ -51,7 +51,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.retrofit)
     implementation(libs.converter.moshi)
-    implementation(libs.converter.scalars)
     implementation(libs.moshi.kotlin)
     implementation(libs.coil.compose)
 
