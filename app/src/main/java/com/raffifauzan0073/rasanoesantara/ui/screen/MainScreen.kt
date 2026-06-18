@@ -2,6 +2,7 @@ package com.raffifauzan0073.rasanoesantara.ui.screen
 
 import android.content.res.Configuration
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -20,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +40,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.raffifauzan0073.rasanoesantara.R
 import com.raffifauzan0073.rasanoesantara.model.Makanan
+import com.raffifauzan0073.rasanoesantara.network.ApiStatus
 import com.raffifauzan0073.rasanoesantara.ui.theme.RasaNoesantaraTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,35 +67,50 @@ fun MainScreen() {
 fun ScreenContent(modifier: Modifier = Modifier) {
     val viewModel: MainViewModel = viewModel()
     val data by viewModel.data
+    val status by viewModel.status.collectAsState()
 
-    LazyColumn(
-        modifier = modifier.fillMaxSize()
-    ) {
-
-        item {
-            Column(
-                modifier = Modifier.padding(16.dp)
+    when (status) {
+        ApiStatus.LOADING -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-
-                Text(
-                    text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = stringResource(R.string.deskripsi)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
+                CircularProgressIndicator()
             }
         }
 
-        items(data) { makanan ->
-            ListItem(makanan)
+        ApiStatus.SUCCESS -> {
+            LazyColumn(
+                modifier = modifier.fillMaxSize()
+            ) {
+
+                item {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+
+                        Text(
+                            text = stringResource(R.string.app_name),
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = stringResource(R.string.deskripsi)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+
+                items(data) { makanan ->
+                    ListItem(makanan)
+                }
+            }
         }
     }
+
 }
 
 @Composable

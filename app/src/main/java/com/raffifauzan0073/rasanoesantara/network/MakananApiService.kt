@@ -39,3 +39,4 @@ object MakananApi {
     }
 }
 
+enum class ApiStatus { LOADING, SUCCESS }
