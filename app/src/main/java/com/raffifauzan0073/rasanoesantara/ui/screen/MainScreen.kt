@@ -113,6 +113,7 @@ fun ListItem(makanan: Makanan) {
             contentDescription = makanan.nama,
             contentScale = ContentScale.Crop,
             placeholder = painterResource(id = R.drawable.loading_img),
+            error = painterResource(id = R.drawable.broken_image_24),
             modifier = Modifier.size(120.dp)
         )
 
