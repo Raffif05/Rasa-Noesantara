@@ -2,4 +2,6 @@
     <string name="app_name">Rasa Noesantara</string>
     <string name="gambar">Gambar %1$s</string>
     <string name="deskripsi">Jelajahi berbagai makanan khas Indonesia dari berbagai daerah dan kenali kekayaan kuliner Nusantara.</string>
+    <string name="error">Gagal memuat data.. Koneksi error</string>
+    <string name="try_again">Coba lagi</string>
 </resources>

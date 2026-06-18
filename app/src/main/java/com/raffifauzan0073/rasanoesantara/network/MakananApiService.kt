@@ -34,9 +34,6 @@ object MakananApi {
         retrofit.create(MakananApiService::class.java)
     }
 
-    fun getMakananUrl(imageId: String): String {
-        return "$BASE_URL$imageId.jpg"
-    }
 }
 
-enum class ApiStatus { LOADING, SUCCESS }
+enum class ApiStatus { LOADING, SUCCESS, FAILED }
