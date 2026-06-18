@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Rasa Noesantara</string>
+    <string name="gambar">Gambar %1$s</string>
+    <string name="deskripsi">Jelajahi berbagai makanan khas Indonesia dari berbagai daerah dan kenali kekayaan kuliner Nusantara.</string>
 </resources>
