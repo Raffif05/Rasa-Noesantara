@@ -39,7 +39,7 @@ fun MakananDialog(
     onConfirmation: (String, String) -> Unit
 ) {
     var nama by remember { mutableStateOf("") }
-    var asal by remember { mutableStateOf("") }
+    var daerah by remember { mutableStateOf("") }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
@@ -67,9 +67,9 @@ fun MakananDialog(
                     modifier = Modifier.padding(top = 8.dp)
                 )
                 OutlinedTextField(
-                    value = asal,
-                    onValueChange = { asal = it },
-                    label = { Text(text = stringResource(id = R.string.asal)) },
+                    value = daerah,
+                    onValueChange = { daerah = it },
+                    label = { Text(text = stringResource(id = R.string.daerah)) },
                     maxLines = 1,
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Sentences,
@@ -88,8 +88,8 @@ fun MakananDialog(
                         Text(text = stringResource(R.string.batal))
                     }
                     OutlinedButton(
-                        onClick = { onConfirmation(nama, asal) },
-                        enabled = nama.isNotEmpty() && asal.isNotEmpty(),
+                        onClick = { onConfirmation(nama, daerah) },
+                        enabled = nama.isNotEmpty() && daerah.isNotEmpty(),
                         modifier = Modifier.padding(8.dp)
                     ) {
                         Text(text = stringResource(R.string.simpan))

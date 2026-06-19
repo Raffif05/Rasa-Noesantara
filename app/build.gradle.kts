@@ -29,6 +29,15 @@ android {
         buildConfigField(
             "String", "API_KEY", properties.getProperty("API_KEY")
         )
+        buildConfigField(
+            "String", "SUPABASE_URL", properties.getProperty("SUPABASE_URL")
+        )
+        buildConfigField(
+            "String", "SUPABASE_KEY", properties.getProperty("SUPABASE_KEY")
+        )
+        buildConfigField(
+            "String", "SUPABASE_BASE_URL", properties.getProperty("SUPABASE_BASE_URL")
+        )
     }
 
     buildTypes {
@@ -64,6 +73,7 @@ dependencies {
     implementation(libs.converter.moshi)
     implementation(libs.moshi.kotlin)
     implementation(libs.coil.compose)
+    implementation(libs.okhttp)
 
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)

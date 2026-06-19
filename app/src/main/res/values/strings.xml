@@ -9,7 +9,8 @@
     <string name="logout">Logout</string>
     <string name="tambah_makanan">Tambah makanan</string>
     <string name="nama">Nama</string>
-    <string name="asal">Asal</string>
+    <string name="daerah">Daerah</string>
     <string name="batal">Batal</string>
     <string name="simpan">Simpan</string>
+    <string name="login">Silahkan login terlebih dahulu</string>
 </resources>

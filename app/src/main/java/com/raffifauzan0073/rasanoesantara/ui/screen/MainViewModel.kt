@@ -1,16 +1,21 @@
 package com.raffifauzan0073.rasanoesantara.ui.screen
 
-
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.raffifauzan0073.rasanoesantara.BuildConfig
 import com.raffifauzan0073.rasanoesantara.model.Makanan
 import com.raffifauzan0073.rasanoesantara.network.ApiStatus
 import com.raffifauzan0073.rasanoesantara.network.MakananApi
+import com.raffifauzan0073.rasanoesantara.network.StorageApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.ByteArrayOutputStream
 
 class MainViewModel : ViewModel() {
 
@@ -20,15 +25,19 @@ class MainViewModel : ViewModel() {
     var status = MutableStateFlow(ApiStatus.LOADING)
         private set
 
-    init {
-        retrieveData()
-    }
+    var errorMessage = mutableStateOf<String?>(null)
 
-    fun retrieveData() {
+
+
+    fun retrieveData(userId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             status.value = ApiStatus.LOADING
+
             try {
-                data.value = MakananApi.service.getMakanan()
+                data.value = MakananApi.service.getMakanan(
+                    "eq.$userId"
+                )
+
                 status.value = ApiStatus.SUCCESS
             } catch (e: Exception) {
                 Log.d("MainViewModel", "Failure: ${e.message}")
@@ -36,4 +45,99 @@ class MainViewModel : ViewModel() {
             }
         }
     }
+
+
+    fun saveData(
+        userId: String,
+        nama: String,
+        daerah: String,
+        bitmap: Bitmap
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+
+            try {
+
+                val apiKey = BuildConfig.SUPABASE_KEY
+
+                val fileName =
+                    "makanan_${System.currentTimeMillis()}.jpg"
+
+                val uploadResult =
+                    StorageApi.service.uploadImage(
+                        apiKey = apiKey,
+                        authorization = "Bearer $apiKey",
+                        fileName = fileName,
+                        image = bitmap.toRequestBody()
+                    )
+
+                if (!uploadResult.isSuccessful) {
+
+                    val errorBody =
+                        uploadResult.errorBody()?.string()
+
+                    throw Exception(
+                        "Upload gagal: ${uploadResult.code()} $errorBody"
+                    )
+                }
+
+                val imageUrl =
+                    BuildConfig.SUPABASE_BASE_URL +
+                            "storage/v1/object/public/makanan/$fileName"
+
+                val insertResult =
+                    MakananApi.service.postMakanan(
+                        apiKey = apiKey,
+                        authorization = "Bearer $apiKey",
+                        makanan = Makanan(
+                            userId = userId,
+                            nama = nama,
+                            daerah = daerah,
+                            imageUrl = imageUrl
+                        )
+                    )
+
+                if (!insertResult.isSuccessful) {
+
+                    val errorBody =
+                        insertResult.errorBody()?.string()
+
+                    throw Exception(
+                        "Insert gagal: ${insertResult.code()} $errorBody"
+                    )
+                }
+
+                retrieveData(userId)
+
+            } catch (e: Exception) {
+
+                Log.d(
+                    "MainViewModel",
+                    "Failure: ${e.message}"
+                )
+
+                errorMessage.value =
+                    "Error: ${e.message}"
+            }
+        }
+    }
+
+    private fun Bitmap.toRequestBody() =
+        ByteArrayOutputStream().use { stream ->
+
+            compress(
+                Bitmap.CompressFormat.JPEG,
+                80,
+                stream
+            )
+
+            val byteArray = stream.toByteArray()
+
+            byteArray.toRequestBody(
+                "image/jpeg".toMediaTypeOrNull(),
+                0,
+                byteArray.size
+            )
+        }
+
+    fun clearMessage() { errorMessage.value = null }
 }

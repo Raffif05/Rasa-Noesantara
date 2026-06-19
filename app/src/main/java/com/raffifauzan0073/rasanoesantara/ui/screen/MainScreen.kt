@@ -8,6 +8,7 @@ import android.graphics.ImageDecoder
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -89,10 +91,13 @@ fun MainScreen() {
     val dataStore = UserDataStore(context)
     val user by dataStore.userFlow.collectAsState(User())
 
+    val viewModel: MainViewModel = viewModel()
+    val errorMessage by viewModel.errorMessage
+    val loginRequiredText = stringResource(R.string.login)
     var showDialog by remember { mutableStateOf(false) }
     var showMakananDialog by remember { mutableStateOf(false) }
 
-    var     bitmap: Bitmap? by remember { mutableStateOf(null) }
+    var bitmap: Bitmap? by remember { mutableStateOf(null) }
     val launcher = rememberLauncherForActivityResult(CropImageContract()) {
         bitmap = getCroppedImage(context.contentResolver, it)
         if (bitmap != null) showMakananDialog = true
@@ -128,6 +133,16 @@ fun MainScreen() {
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
+                if (user.email.isEmpty()) {
+                    Toast.makeText(
+                        context,
+                        loginRequiredText,
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    return@FloatingActionButton
+                }
+
                 val options = CropImageContractOptions(
                     null, CropImageOptions(
                         imageSourceIncludeGallery = true,
@@ -145,7 +160,7 @@ fun MainScreen() {
         }
 
     ) { innerPadding ->
-        ScreenContent(modifier = Modifier.padding(innerPadding)
+        ScreenContent(viewModel, user.email, modifier = Modifier.padding(innerPadding)
         )
 
         if (showDialog) {
@@ -160,18 +175,26 @@ fun MainScreen() {
         if (showMakananDialog) {
             MakananDialog(
                 bitmap = bitmap,
-                onDismissRequest = { showMakananDialog = false }) { nama, asal ->
-                Log.d("TAMBAH", "$nama $asal ditambahkan.")
+                onDismissRequest = { showMakananDialog = false }) { nama, daerah ->
+                viewModel.saveData(user.email, nama, daerah, bitmap!!)
                 showMakananDialog = false
             }
+        }
+
+        if (errorMessage != null) {
+            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+            viewModel.clearMessage()
         }
     }
 }
 @Composable
-fun ScreenContent(modifier: Modifier = Modifier) {
-    val viewModel: MainViewModel = viewModel()
+fun ScreenContent(viewModel: MainViewModel, userId: String, modifier: Modifier = Modifier) {
     val data by viewModel.data
     val status by viewModel.status.collectAsState()
+
+    LaunchedEffect(userId) {
+        viewModel.retrieveData(userId)
+    }
 
     when (status) {
         ApiStatus.LOADING -> {
@@ -224,7 +247,7 @@ fun ScreenContent(modifier: Modifier = Modifier) {
             ) {
                 Text(text = stringResource(id = R.string.error))
                 Button(
-                    onClick = { viewModel.retrieveData() },
+                    onClick = { viewModel.retrieveData(userId) },
                     modifier = Modifier.padding(top = 16.dp),
                     contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
                 ) {
@@ -344,6 +367,7 @@ private fun getCroppedImage(
     val uri = result.uriContent ?: return null
 
     return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+        @Suppress("DEPRECATION")
         MediaStore.Images.Media.getBitmap(resolver, uri)
     } else {
         val source = ImageDecoder.createSource(resolver, uri)
