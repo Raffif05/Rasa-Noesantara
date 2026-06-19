@@ -29,17 +29,21 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import coil.compose.AsyncImage
 import com.raffifauzan0073.rasanoesantara.R
 import com.raffifauzan0073.rasanoesantara.ui.theme.RasaNoesantaraTheme
 
 @Composable
 fun MakananDialog(
     bitmap: Bitmap?,
+    imageUrl: String? = null,
+    initialNama: String = "",
+    initialDaerah: String = "",
     onDismissRequest: () -> Unit,
     onConfirmation: (String, String) -> Unit
 ) {
-    var nama by remember { mutableStateOf("") }
-    var daerah by remember { mutableStateOf("") }
+    var nama by remember { mutableStateOf(initialNama) }
+    var daerah by remember { mutableStateOf(initialDaerah) }
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
@@ -50,11 +54,24 @@ fun MakananDialog(
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Image(
-                    bitmap = bitmap!!.asImageBitmap(),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxWidth().aspectRatio(1f)
-                )
+                if (bitmap != null) {
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                    )
+                }
+                else if (imageUrl != null) {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                    )
+                }
                 OutlinedTextField(
                     value = nama,
                     onValueChange = { nama = it },

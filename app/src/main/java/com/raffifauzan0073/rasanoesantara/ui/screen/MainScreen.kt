@@ -27,12 +27,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -117,11 +121,10 @@ fun MainScreen() {
                     IconButton(onClick = {
                         if (user.email.isEmpty()) {
                             CoroutineScope(Dispatchers.IO).launch { signIn(context, dataStore) }
-                        }
-                        else {
+                        } else {
                             showDialog = true
                         }
-                        }) {
+                    }) {
                         Icon(
                             painter = painterResource(R.drawable.account_circle_24),
                             contentDescription = stringResource(R.string.profil),
@@ -196,6 +199,8 @@ fun ScreenContent(viewModel: MainViewModel, userId: String, modifier: Modifier =
         viewModel.retrieveData(userId)
     }
 
+    var makananEdit by remember { mutableStateOf<Makanan?>(null) }
+
     when (status) {
         ApiStatus.LOADING -> {
             Box(
@@ -210,14 +215,11 @@ fun ScreenContent(viewModel: MainViewModel, userId: String, modifier: Modifier =
             LazyColumn(
                 modifier = modifier.fillMaxSize().padding(4.dp),
                 contentPadding = PaddingValues(bottom = 80.dp)
-
             ) {
-
                 item {
                     Column(
                         modifier = Modifier.padding(16.dp)
                     ) {
-
                         Text(
                             text = stringResource(R.string.app_name),
                             style = MaterialTheme.typography.headlineSmall
@@ -234,7 +236,17 @@ fun ScreenContent(viewModel: MainViewModel, userId: String, modifier: Modifier =
                 }
 
                 items(data) { makanan ->
-                    ListItem(makanan)
+                    ListItem(
+                        makanan = makanan,
+                        onEdit = {
+                            makananEdit = makanan
+                        },
+                        onDelete = {
+                            makanan.id?.let {
+                                viewModel.deleteData(userId, it)
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -257,10 +269,39 @@ fun ScreenContent(viewModel: MainViewModel, userId: String, modifier: Modifier =
         }
     }
 
+    makananEdit?.let { item ->
+        MakananDialog(
+            bitmap = null,
+            imageUrl = item.imageUrl,
+            initialNama = item.nama,
+            initialDaerah = item.daerah,
+            onDismissRequest = {
+                makananEdit = null
+            }
+        ) { nama, daerah ->
+            item.id?.let {
+                viewModel.updateData(
+                    id = it,
+                    userId = userId,
+                    nama = nama,
+                    daerah = daerah,
+                    imageUrl = item.imageUrl
+                )
+            }
+            makananEdit = null
+        }
+    }
+
 }
 
 @Composable
-fun ListItem(makanan: Makanan) {
+fun ListItem(
+    makanan: Makanan,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -284,7 +325,9 @@ fun ListItem(makanan: Makanan) {
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        Column{
+        Column(
+            modifier = Modifier.weight(1f)
+        ){
             Text(
                 text = makanan.nama,
                 fontWeight = FontWeight.Bold,
@@ -299,6 +342,77 @@ fun ListItem(makanan: Makanan) {
                 style = MaterialTheme.typography.bodyMedium
             )
         }
+
+        Box {
+            IconButton(
+                onClick = {
+                    expanded = true
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = stringResource(id = R.string.menu)
+                )
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = {
+                    expanded = false
+                }
+            ) {
+                DropdownMenuItem(
+                    text = {
+                        Text(stringResource(R.string.edit))
+                    },
+                    onClick = {
+                        expanded = false
+                        onEdit()
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(stringResource(R.string.hapus))
+                    },
+                    onClick = {
+                        expanded = false
+                        showDeleteDialog = true
+                    }
+                )
+            }
+        }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteDialog = false
+            },
+            title = {
+                Text(stringResource(R.string.hapus_makanan))
+            },
+            text = {
+                Text(stringResource(R.string.komfirmasi))
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDelete()
+                    }
+                ) {
+                    Text(stringResource(R.string.hapus))
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text(stringResource(R.string.batal))
+                }
+            }
+        )
     }
 }
 

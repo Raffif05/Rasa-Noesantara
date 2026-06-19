@@ -13,4 +13,9 @@
     <string name="batal">Batal</string>
     <string name="simpan">Simpan</string>
     <string name="login">Silahkan login terlebih dahulu</string>
+    <string name="edit">Edit</string>
+    <string name="hapus">Hapus</string>
+    <string name="hapus_makanan">Hapus Makanan</string>
+    <string name="komfirmasi">Apakah Anda yakin ingin menghapus data ini?</string>
+    <string name="menu">Menu</string>
 </resources>

@@ -121,6 +121,87 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun deleteData(
+        userId: String,
+        id: Long
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+
+            try {
+
+                val apiKey = BuildConfig.SUPABASE_KEY
+
+                val result =
+                    MakananApi.service.deleteMakanan(
+                        apiKey = apiKey,
+                        authorization = "Bearer $apiKey",
+                        id = "eq.$id"
+                    )
+
+                if (!result.isSuccessful) {
+                    throw Exception(
+                        "Delete gagal: ${result.code()}"
+                    )
+                }
+
+                retrieveData(userId)
+
+            } catch (e: Exception) {
+
+                Log.d(
+                    "MainViewModel",
+                    "Failure: ${e.message}"
+                )
+
+                errorMessage.value =
+                    "Error: ${e.message}"
+            }
+        }
+    }
+
+    fun updateData(
+        id: Long,
+        userId: String,
+        nama: String,
+        daerah: String,
+        imageUrl: String
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+
+            try {
+
+                val apiKey = BuildConfig.SUPABASE_KEY
+
+                val result =
+                    MakananApi.service.updateMakanan(
+                        apiKey = apiKey,
+                        authorization = "Bearer $apiKey",
+                        id = "eq.$id",
+                        makanan = Makanan(
+                            id = id,
+                            userId = userId,
+                            nama = nama,
+                            daerah = daerah,
+                            imageUrl = imageUrl
+                        )
+                    )
+
+                if (!result.isSuccessful) {
+                    throw Exception(
+                        "Update gagal: ${result.code()}"
+                    )
+                }
+
+                retrieveData(userId)
+
+            } catch (e: Exception) {
+
+                errorMessage.value =
+                    "Error: ${e.message}"
+            }
+        }
+    }
+
     private fun Bitmap.toRequestBody() =
         ByteArrayOutputStream().use { stream ->
 

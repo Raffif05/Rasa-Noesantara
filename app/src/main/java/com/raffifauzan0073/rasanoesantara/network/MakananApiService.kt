@@ -7,9 +7,11 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Query
 
@@ -42,6 +44,21 @@ interface MakananApiService {
     suspend fun postMakanan(
         @Header("apikey") apiKey: String,
         @Header("Authorization") authorization: String,
+        @Body makanan: Makanan
+    ): Response<List<Makanan>>
+
+    @DELETE("Makanan")
+    suspend fun deleteMakanan(
+        @Header("apikey") apiKey: String,
+        @Header("Authorization") authorization: String,
+        @Query("id") id: String
+    ): Response<Unit>
+
+    @PATCH("Makanan")
+    suspend fun updateMakanan(
+        @Header("apikey") apiKey: String,
+        @Header("Authorization") authorization: String,
+        @Query("id") id: String,
         @Body makanan: Makanan
     ): Response<List<Makanan>>
 }
